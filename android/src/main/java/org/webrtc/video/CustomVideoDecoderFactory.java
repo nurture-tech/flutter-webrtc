@@ -10,6 +10,7 @@ import org.webrtc.VideoDecoderFactory;
 import org.webrtc.WrappedVideoDecoderFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CustomVideoDecoderFactory implements VideoDecoderFactory {
@@ -19,7 +20,10 @@ public class CustomVideoDecoderFactory implements VideoDecoderFactory {
 
     private List<String> forceSWCodecs = new ArrayList<>();
 
+    private List<String> priorities;
+
     public  CustomVideoDecoderFactory(EglBase.Context sharedContext) {
+        priorities = Arrays.asList("H265", "H264", "VP9", "VP8");
         this.wrappedVideoDecoderFactory = new WrappedVideoDecoderFactory(sharedContext);
     }
 
@@ -47,9 +51,29 @@ public class CustomVideoDecoderFactory implements VideoDecoderFactory {
 
     @Override
     public VideoCodecInfo[] getSupportedCodecs() {
-        if(forceSWCodec && forceSWCodecs.isEmpty()) {
-            return softwareVideoDecoderFactory.getSupportedCodecs();
+//        if(forceSWCodec && forceSWCodecs.isEmpty()) {
+//            return softwareVideoDecoderFactory.getSupportedCodecs();
+//        }
+//        return wrappedVideoDecoderFactory.getSupportedCodecs();
+
+        final List<VideoCodecInfo> supported = new ArrayList<>(Arrays.asList(wrappedVideoDecoderFactory.getSupportedCodecs()));
+        final VideoCodecInfo[] sorted = new VideoCodecInfo[supported.size()];
+        int i = 0;
+        for (String codec : priorities) {
+            int j = 0;
+            while (j < supported.size() && !codec.equals(supported.get(j).name))
+                j++;
+            if (j < supported.size()) {
+                sorted[i++] = supported.get(j);
+                supported.remove(j);
+            }
         }
-        return wrappedVideoDecoderFactory.getSupportedCodecs();
+        while (i < sorted.length && !supported.isEmpty()) {
+            final VideoCodecInfo codecInfo = supported.get(0);
+            supported.remove(0);
+            sorted[i++] = codecInfo;
+        }
+
+        return sorted;
     }
 }
