@@ -516,6 +516,9 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
         }
       }
     }
+
+    // Bug fix: track get disposed
+    remoteTracks.put(receiver.track().id(), receiver.track());
     sendEvent(params);
   }
 
