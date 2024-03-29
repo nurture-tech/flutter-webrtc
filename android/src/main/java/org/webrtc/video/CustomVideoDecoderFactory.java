@@ -23,7 +23,7 @@ public class CustomVideoDecoderFactory implements VideoDecoderFactory {
     private List<String> priorities;
 
     public  CustomVideoDecoderFactory(EglBase.Context sharedContext) {
-        priorities = Arrays.asList("H265", "H264", "VP9", "VP8");
+        priorities = Arrays.asList("H265", "H264", "AV1", "VP9", "VP8");
         this.wrappedVideoDecoderFactory = new WrappedVideoDecoderFactory(sharedContext);
     }
 
